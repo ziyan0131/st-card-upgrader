@@ -1,0 +1,461 @@
+/* ========== 角色卡升级工具 - 浅粉白色调 ========== */
+
+/* 扩展面板内嵌容器 */
+.cu-ext-settings .inline-drawer-content {
+    padding: 0 !important;
+}
+
+#card-upgrader-panel {
+    padding: 15px;
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* 顶部标题 */
+.cu-header {
+    text-align: center;
+    padding: 16px 12px;
+    background: linear-gradient(135deg, #fff0f5, #ffe4ec, #fff5f8);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    border: 1px solid #ffd6e0;
+    box-shadow: 0 2px 10px rgba(255, 182, 193, 0.2);
+}
+
+.cu-header h2 {
+    margin: 0 0 6px 0;
+    font-size: 20px;
+    color: #d63384;
+    font-weight: 700;
+}
+
+.cu-subtitle {
+    margin: 0;
+    font-size: 12px;
+    color: #e48aa7;
+}
+
+/* 区块 */
+.cu-section {
+    background: #fff8fa;
+    border: 1px solid #ffe0e8;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.cu-section:hover {
+    box-shadow: 0 2px 12px rgba(255, 182, 193, 0.15);
+}
+
+.cu-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #c2185b;
+}
+
+.cu-step-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(135deg, #f8bbd0, #f48fb1);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* 下拉选择行 */
+.cu-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#cu-character-select {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1.5px solid #f8bbd0;
+    border-radius: 8px;
+    background: #fff;
+    color: #5d4037;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: auto;
+}
+
+#cu-character-select:focus {
+    border-color: #ec407a;
+    box-shadow: 0 0 0 3px rgba(236, 64, 122, 0.12);
+}
+
+/* 按钮通用 */
+.cu-btn {
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.cu-btn:hover {
+    transform: translateY(-1px);
+}
+
+.cu-btn:active {
+    transform: translateY(0);
+}
+
+.cu-btn-small {
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+    color: #c2185b;
+    font-size: 16px;
+}
+
+.cu-btn-small:hover {
+    background: linear-gradient(135deg, #f8bbd0, #f48fb1);
+    color: #fff;
+}
+
+.cu-btn-tiny {
+    padding: 4px 10px;
+    background: #fce4ec;
+    color: #e91e63;
+    font-size: 11px;
+    margin-left: auto;
+}
+
+.cu-btn-tiny:hover {
+    background: #f8bbd0;
+}
+
+.cu-btn-primary {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #f06292, #ec407a);
+    color: #fff;
+    font-size: 15px;
+    box-shadow: 0 3px 12px rgba(236, 64, 122, 0.3);
+}
+
+.cu-btn-primary:hover {
+    background: linear-gradient(135deg, #ec407a, #e91e63);
+    box-shadow: 0 4px 16px rgba(233, 30, 99, 0.4);
+}
+
+.cu-btn-primary:disabled {
+    background: #f8bbd0;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.cu-btn-secondary {
+    padding: 10px 20px;
+    background: #fff0f3;
+    color: #c2185b;
+    border: 1.5px solid #f8bbd0;
+    font-size: 14px;
+}
+
+.cu-btn-secondary:hover {
+    background: #fce4ec;
+}
+
+/* 角色卡信息 */
+.cu-card-info {
+    max-height: 400px;
+    overflow-y: auto;
+    transition: max-height 0.35s ease;
+}
+
+.cu-card-info.collapsed {
+    max-height: 0;
+    overflow: hidden;
+}
+
+.cu-info-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.cu-info-row label {
+    flex-shrink: 0;
+    width: 80px;
+    color: #ad1457;
+    font-weight: 600;
+}
+
+.cu-info-row span,
+.cu-info-row div {
+    color: #6d4c5e;
+}
+
+.cu-text-preview {
+    max-height: 80px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #fce4ec;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    flex: 1;
+}
+
+.cu-version-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, #f8bbd0, #f48fb1);
+    color: #fff !important;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* 世界书列表 */
+.cu-worldinfo-list {
+    max-height: 300px;
+    overflow-y: auto;
+    transition: max-height 0.35s ease;
+}
+
+.cu-worldinfo-list.collapsed {
+    max-height: 0;
+    overflow: hidden;
+}
+
+.cu-wi-entry {
+    background: #fff;
+    border: 1px solid #fce4ec;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+}
+
+.cu-wi-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.cu-wi-key {
+    font-weight: 600;
+    color: #c2185b;
+    font-size: 13px;
+}
+
+.cu-wi-content {
+    font-size: 12px;
+    color: #795548;
+    max-height: 60px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* 复选框组 */
+.cu-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cu-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #fff;
+    border: 1.5px solid #fce4ec;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #6d4c5e;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.cu-checkbox:hover {
+    border-color: #f48fb1;
+    background: #fff0f3;
+}
+
+.cu-checkbox input[type="checkbox"] {
+    accent-color: #e91e63;
+    width: 16px;
+    height: 16px;
+}
+
+/* AI提示词 */
+#cu-ai-prompt {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #f8bbd0;
+    border-radius: 10px;
+    background: #fff;
+    color: #5d4037;
+    font-size: 13px;
+    font-family: inherit;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+#cu-ai-prompt:focus {
+    border-color: #ec407a;
+    box-shadow: 0 0 0 3px rgba(236, 64, 122, 0.1);
+}
+
+#cu-ai-prompt::placeholder {
+    color: #e0a0b0;
+}
+
+/* 生成按钮行 */
+.cu-generate-row {
+    text-align: center;
+}
+
+/* 进度条 */
+.cu-progress {
+    margin-top: 12px;
+}
+
+.cu-progress-bar {
+    height: 6px;
+    background: #fce4ec;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.cu-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f48fb1, #ec407a);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+#cu-progress-text {
+    text-align: center;
+    font-size: 12px;
+    color: #c2185b;
+    margin-top: 6px;
+}
+
+/* 结果区域 */
+.cu-result-content {
+    max-height: 350px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #fce4ec;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 13px;
+    color: #5d4037;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.cu-result-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* 扩展抽屉按钮图标 */
+#cu-extension-button .fa-solid {
+    color: #e91e63;
+}
+
+/* 滚动条美化 */
+#card-upgrader-panel ::-webkit-scrollbar {
+    width: 5px;
+}
+
+#card-upgrader-panel ::-webkit-scrollbar-track {
+    background: #fff5f8;
+    border-radius: 3px;
+}
+
+#card-upgrader-panel ::-webkit-scrollbar-thumb {
+    background: #f8bbd0;
+    border-radius: 3px;
+}
+
+#card-upgrader-panel ::-webkit-scrollbar-thumb:hover {
+    background: #f48fb1;
+}
+
+/* 动画 */
+@keyframes cu-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.cu-generating {
+    animation: cu-pulse 1.5s infinite;
+}
+
+/* 结果内字段块 */
+.cu-result-field {
+    margin-bottom: 12px;
+}
+
+.cu-result-field-title {
+    font-weight: 700;
+    color: #c2185b;
+    margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.cu-result-field-content {
+    background: #fff8fa;
+    border: 1px solid #fce4ec;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+    white-space: pre-wrap;
+}
+
+/* Toast 提示 */
+.cu-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #f06292, #ec407a);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(236, 64, 122, 0.35);
+    z-index: 99999;
+    animation: cu-toast-in 0.3s ease;
+}
+
+@keyframes cu-toast-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

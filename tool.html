@@ -1,0 +1,129 @@
+<div id="card-upgrader-panel">
+    <!-- 顶部标题 -->
+    <div class="cu-header">
+        <h2>🌸 角色卡升级工具</h2>
+        <p class="cu-subtitle">选择角色卡 → 编写AI提示词 → 一键生成升级版本</p>
+    </div>
+
+    <!-- 第一步：选择角色卡 -->
+    <div class="cu-section">
+        <div class="cu-section-title">
+            <span class="cu-step-badge">1</span>
+            <span>选择角色卡</span>
+        </div>
+        <div class="cu-row">
+            <select id="cu-character-select">
+                <option value="">-- 请选择角色卡 --</option>
+            </select>
+            <button id="cu-refresh-chars" class="cu-btn cu-btn-small" title="刷新角色列表">🔄</button>
+        </div>
+    </div>
+
+    <!-- 角色卡信息预览 -->
+    <div class="cu-section" id="cu-card-preview" style="display:none;">
+        <div class="cu-section-title">
+            <span class="cu-step-badge">📋</span>
+            <span>角色卡信息</span>
+            <button id="cu-toggle-preview" class="cu-btn cu-btn-tiny">展开</button>
+        </div>
+        <div id="cu-card-info" class="cu-card-info collapsed">
+            <div class="cu-info-row"><label>名称：</label><span id="cu-info-name"></span></div>
+            <div class="cu-info-row"><label>当前版本：</label><span id="cu-info-version" class="cu-version-tag"></span></div>
+            <div class="cu-info-row"><label>创建者：</label><span id="cu-info-creator"></span></div>
+            <div class="cu-info-row">
+                <label>描述：</label>
+                <div id="cu-info-description" class="cu-text-preview"></div>
+            </div>
+            <div class="cu-info-row">
+                <label>首条消息：</label>
+                <div id="cu-info-firstmes" class="cu-text-preview"></div>
+            </div>
+            <div class="cu-info-row">
+                <label>人设：</label>
+                <div id="cu-info-personality" class="cu-text-preview"></div>
+            </div>
+            <div class="cu-info-row">
+                <label>场景：</label>
+                <div id="cu-info-scenario" class="cu-text-preview"></div>
+            </div>
+            <div class="cu-info-row">
+                <label>系统提示词：</label>
+                <div id="cu-info-sysprompt" class="cu-text-preview"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 世界书信息 -->
+    <div class="cu-section" id="cu-worldinfo-section" style="display:none;">
+        <div class="cu-section-title">
+            <span class="cu-step-badge">📖</span>
+            <span>关联世界书</span>
+            <button id="cu-toggle-worldinfo" class="cu-btn cu-btn-tiny">展开</button>
+        </div>
+        <div id="cu-worldinfo-list" class="cu-worldinfo-list collapsed"></div>
+    </div>
+
+    <!-- 第二步：选择要修改的内容 -->
+    <div class="cu-section" id="cu-modify-section" style="display:none;">
+        <div class="cu-section-title">
+            <span class="cu-step-badge">2</span>
+            <span>选择修改内容</span>
+        </div>
+        <div class="cu-checkbox-group">
+            <label class="cu-checkbox"><input type="checkbox" id="cu-mod-description" checked> 描述</label>
+            <label class="cu-checkbox"><input type="checkbox" id="cu-mod-firstmes"> 首条消息</label>
+            <label class="cu-checkbox"><input type="checkbox" id="cu-mod-personality"> 人设</label>
+            <label class="cu-checkbox"><input type="checkbox" id="cu-mod-scenario"> 场景</label>
+            <label class="cu-checkbox"><input type="checkbox" id="cu-mod-sysprompt"> 系统提示词</label>
+            <label class="cu-checkbox"><input type="checkbox" id="cu-mod-mesexample"> 对话示例</label>
+            <label class="cu-checkbox"><input type="checkbox" id="cu-mod-worldinfo"> 世界书</label>
+        </div>
+    </div>
+
+    <!-- 第三步：AI提示词 -->
+    <div class="cu-section" id="cu-prompt-section" style="display:none;">
+        <div class="cu-section-title">
+            <span class="cu-step-badge">3</span>
+            <span>AI 修改提示词</span>
+        </div>
+        <textarea id="cu-ai-prompt" placeholder="请输入你希望AI如何修改角色卡的指令...
+
+例如：
+- 让角色性格更加温柔，增加更多细节描述
+- 丰富世界观设定，增加背景故事
+- 优化对话风格，使之更加自然
+- 增加角色的特殊技能和习惯描述" rows="6"></textarea>
+    </div>
+
+    <!-- 第四步：生成 -->
+    <div class="cu-section" id="cu-generate-section" style="display:none;">
+        <div class="cu-section-title">
+            <span class="cu-step-badge">4</span>
+            <span>生成升级版本</span>
+        </div>
+        <div class="cu-generate-row">
+            <button id="cu-generate-btn" class="cu-btn cu-btn-primary">
+                🚀 生成升级版角色卡
+            </button>
+        </div>
+        <div id="cu-progress" class="cu-progress" style="display:none;">
+            <div class="cu-progress-bar">
+                <div class="cu-progress-fill" id="cu-progress-fill"></div>
+            </div>
+            <p id="cu-progress-text">准备中...</p>
+        </div>
+    </div>
+
+    <!-- 结果预览 -->
+    <div class="cu-section" id="cu-result-section" style="display:none;">
+        <div class="cu-section-title">
+            <span class="cu-step-badge">✅</span>
+            <span>生成结果预览</span>
+        </div>
+        <div id="cu-result-content" class="cu-result-content"></div>
+        <div class="cu-result-actions">
+            <button id="cu-import-btn" class="cu-btn cu-btn-primary">📥 导入为新角色卡</button>
+            <button id="cu-copy-btn" class="cu-btn cu-btn-secondary">📋 复制结果</button>
+        </div>
+    </div>
+</div>
