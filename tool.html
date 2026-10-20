@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>角色卡升级工具</title>
+<style>
+:root {
+    --bg: #fff8fa; --surface: #fff; --surface2: #fef0f4;
+    --accent: #d4638a; --accent2: #e8a0b8;
+    --text: #3a2030; --text2: #8a6070; --border: #f0d0dd;
+    --input-bg: #fef8fa; --btn-bg: #d4638a; --btn-text: #fff;
+    --radius: 10px; --font-size: 13px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+    background: var(--bg); color: var(--text);
+    font-size: var(--font-size); line-height: 1.5;
+    overflow-x: hidden;
+}
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: #f0c0d0; border-radius: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* 通用 */
+label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 3px; font-weight: 600; }
+input[type=text], input[type=search], textarea, select {
+    width: 100%; background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text); padding: 8px 10px;
+    font-size: var(--font-size); outline: none; transition: border .2s;
+    font-family: inherit; resize: vertical;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(212,99,138,0.1); }
+textarea { min-height: 60px; }
+.btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer;
+    font-size: 12px; font-weight: 600; transition: all .15s; font-family: inherit;
+}
+.btn:hover { opacity: .88; } .btn:active { transform: scale(.97); }
+.btn-primary { background: var(--btn-bg); color: var(--btn-text); }
+.btn-primary:disabled { background: #e8a0b8; cursor: not-allowed; }
+.btn-soft { background: var(--surface2); color: var(--accent); border: 1px solid var(--border); }
+.btn-soft:hover { border-color: var(--accent); }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-full { width: 100%; justify-content: center; }
+.mt6 { margin-top: 6px; } .mt10 { margin-top: 10px; } .mb6 { margin-bottom: 6px; } .mb10 { margin-bottom: 10px; }
+.gap6 { display: flex; gap: 6px; } .gap6.wrap { flex-wrap: wrap; }
+
+/* 区块 */
+.section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); margin: 10px 12px; overflow: hidden;
+}
+.section-hdr {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; cursor: pointer; font-size: 13px; font-weight: 600;
+    color: var(--accent); user-select: none;
+}
+.section-hdr:hover { background: var(--surface2); }
+.section-hdr .arrow { font-size: 10px; color: var(--text2); transition: transform .2s; }
+.section-hdr.collapsed .arrow { transform: rotate(-90deg); }
+.section-body { padding: 12px 14px; border-top: 1px solid var(--border); }
+.section-body.hidden { display: none; }
+
+/* 搜索框 */
+.search-wrap {
+    padding: 10px 12px 0;
+}
+.search-input {
+    background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23d4638a' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 10px center no-repeat;
+    padding-left: 30px !important;
+}
+
+/* 角色卡列表 */
+.char-list {
+    max-height: 200px; overflow-y: auto;
+    margin: 6px 12px; border: 1px solid var(--border); border-radius: 8px;
+}
+.char-item {
+    padding: 8px 12px; cursor: pointer; display: flex; align-items: center;
+    gap: 8px; border-bottom: 1px solid var(--border); font-size: 13px;
+    transition: background .1s;
+}
+.char-item:last-child { border-bottom: none; }
+.char-item:hover { background: var(--surface2); }
+.char-item.selected { background: #fce4ec; color: var(--accent); font-weight: 600; }
+.char-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.char-item-ver { font-size: 10px; color: var(--text2); background: var(--surface2); padding: 1px 6px; border-radius: 10px; }
+.char-count { font-size: 11px; color: var(--text2); padding: 4px 12px; }
+
+/* 编辑区域 */
+.field-group { margin-bottom: 12px; }
+.field-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+}
+.field-header label { margin-bottom: 0; }
+.field-header .btn { flex-shrink: 0; }
+
+/* 世界书条目 */
+.wi-entry {
+    background: var(--input-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; margin-bottom: 8px;
+}
+.wi-entry-hdr {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px; font-size: 12px;
+}
+.wi-entry-hdr strong { color: var(--accent); }
+.wi-keys { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+
+/* AI提示词区域 */
+.ai-section {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; margin-top: 10px;
+}
+.ai-section-title {
+    font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 6px;
+}
+
+/* 进度 & Toast */
+.progress-wrap { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 8px 0; display: none; }
+.progress-wrap.visible { display: block; }
+.progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width .4s; border-radius: 2px; }
+.status-text { font-size: 11px; color: var(--accent); text-align: center; }
+.toast {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 9999; padding: 8px 18px; border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,.12); pointer-events: none;
+    animation: toastIn .3s ease; max-width: 90vw; text-align: center;
+}
+.toast.success { background: #eefde8; color: #2a6020; border: 1px solid #b8dfc4; }
+.toast.error { background: #fde8e8; color: #a02020; border: 1px solid #f0b0b0; }
+.toast.info { background: #fff0f5; color: #d4638a; border: 1px solid #f0c0d0; }
+@keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(-10px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+
+/* 底部按钮组 */
+.bottom-actions {
+    padding: 12px; border-top: 1px solid var(--border);
+    background: var(--surface); display: flex; gap: 8px; flex-wrap: wrap;
+}
+
+/* 移动端适配 */
+@media (max-width: 600px) {
+    .section { margin: 6px 8px; }
+    .section-body { padding: 10px; }
+    .search-wrap { padding: 8px 8px 0; }
+    .char-list { margin: 6px 8px; max-height: 160px; }
+    .bottom-actions { padding: 10px 8px; }
+    .gap6 { flex-direction: column; }
+    .btn { padding: 10px 16px; font-size: 13px; }
+    textarea { min-height: 80px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 搜索 + 角色列表 -->
+<div class="search-wrap">
+    <input type="search" id="charSearch" class="search-input" placeholder="搜索角色卡...">
+</div>
+<div class="char-count" id="charCount">加载中...</div>
+<div class="char-list" id="charList"></div>
+
+<!-- 角色卡基本信息 -->
+<div class="section" id="secInfo" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>📋 角色卡信息</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <div class="field-group">
+            <label>角色名</label>
+            <input type="text" id="fName" readonly>
+        </div>
+        <div class="gap6">
+            <div class="field-group" style="flex:1">
+                <label>当前版本</label>
+                <input type="text" id="fVersion" readonly>
+            </div>
+            <div class="field-group" style="flex:1">
+                <label>创建者</label>
+                <input type="text" id="fCreator" readonly>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 描述编辑 -->
+<div class="section" id="secDesc" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>📝 描述 (Description)</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <textarea id="fDesc" rows="6" placeholder="角色描述..."></textarea>
+        <div class="ai-section mt6">
+            <div class="ai-section-title">✨ AI修改描述</div>
+            <textarea id="aiDesc" rows="2" placeholder="输入AI修改指令，如：增加更多外貌细节..."></textarea>
+            <button class="btn btn-primary btn-sm mt6" onclick="aiModifyField('description','fDesc','aiDesc')">🤖 AI修改</button>
+        </div>
+    </div>
+</div>
+
+<!-- 人设编辑 -->
+<div class="section" id="secPers" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>🎭 人设 (Personality)</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <textarea id="fPers" rows="4" placeholder="角色人设..."></textarea>
+        <div class="ai-section mt6">
+            <div class="ai-section-title">✨ AI修改人设</div>
+            <textarea id="aiPers" rows="2" placeholder="输入AI修改指令..."></textarea>
+            <button class="btn btn-primary btn-sm mt6" onclick="aiModifyField('personality','fPers','aiPers')">🤖 AI修改</button>
+        </div>
+    </div>
+</div>
+
+<!-- 场景编辑 -->
+<div class="section" id="secScen" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>🌍 场景 (Scenario)</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <textarea id="fScen" rows="4" placeholder="场景设定..."></textarea>
+        <div class="ai-section mt6">
+            <div class="ai-section-title">✨ AI修改场景</div>
+            <textarea id="aiScen" rows="2" placeholder="输入AI修改指令..."></textarea>
+            <button class="btn btn-primary btn-sm mt6" onclick="aiModifyField('scenario','fScen','aiScen')">🤖 AI修改</button>
+        </div>
+    </div>
+</div>
+
+<!-- 首条消息/开场白 -->
+<div class="section" id="secFirst" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>💬 开场白 (First Message)</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <textarea id="fFirst" rows="6" placeholder="开场白..."></textarea>
+        <div class="ai-section mt6">
+            <div class="ai-section-title">✨ AI修改开场白</div>
+            <textarea id="aiFirst" rows="2" placeholder="输入AI修改指令..."></textarea>
+            <button class="btn btn-primary btn-sm mt6" onclick="aiModifyField('first_mes','fFirst','aiFirst')">🤖 AI修改</button>
+        </div>
+    </div>
+</div>
+
+<!-- 系统提示词 -->
+<div class="section" id="secSys" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>⚙️ 系统提示词 (System Prompt)</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <textarea id="fSys" rows="4" placeholder="系统提示词..."></textarea>
+        <div class="ai-section mt6">
+            <div class="ai-section-title">✨ AI修改系统提示词</div>
+            <textarea id="aiSys" rows="2" placeholder="输入AI修改指令..."></textarea>
+            <button class="btn btn-primary btn-sm mt6" onclick="aiModifyField('system_prompt','fSys','aiSys')">🤖 AI修改</button>
+        </div>
+    </div>
+</div>
+
+<!-- 对话示例 -->
+<div class="section" id="secMes" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>💭 对话示例 (Message Examples)</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <textarea id="fMes" rows="4" placeholder="对话示例..."></textarea>
+        <div class="ai-section mt6">
+            <div class="ai-section-title">✨ AI修改对话示例</div>
+            <textarea id="aiMes" rows="2" placeholder="输入AI修改指令..."></textarea>
+            <button class="btn btn-primary btn-sm mt6" onclick="aiModifyField('mes_example','fMes','aiMes')">🤖 AI修改</button>
+        </div>
+    </div>
+</div>
+
+<!-- 世界书 -->
+<div class="section" id="secWI" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>📖 世界书 (World Info)</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <div id="wiEntries"></div>
+        <button class="btn btn-soft btn-sm mt6" onclick="addWIEntry()">+ 添加条目</button>
+        <div class="ai-section mt10">
+            <div class="ai-section-title">✨ AI修改全部世界书</div>
+            <textarea id="aiWI" rows="2" placeholder="输入AI修改指令，如：丰富世界观设定..."></textarea>
+            <button class="btn btn-primary btn-sm mt6" onclick="aiModifyWorldInfo()">🤖 AI修改世界书</button>
+        </div>
+    </div>
+</div>
+
+<!-- AI全局修改 -->
+<div class="section" id="secAIAll" style="display:none">
+    <div class="section-hdr" onclick="toggleSection(this)">
+        <span>🚀 AI一键全部修改</span><span class="arrow">▼</span>
+    </div>
+    <div class="section-body">
+        <textarea id="aiAll" rows="3" placeholder="输入全局修改指令，AI会一次性修改所有选中的字段..."></textarea>
+        <div class="gap6 wrap mt6">
+            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:400;cursor:pointer">
+                <input type="checkbox" id="chkDesc" checked> 描述
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:400;cursor:pointer">
+                <input type="checkbox" id="chkPers"> 人设
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:400;cursor:pointer">
+                <input type="checkbox" id="chkScen"> 场景
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:400;cursor:pointer">
+                <input type="checkbox" id="chkFirst"> 开场白
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:400;cursor:pointer">
+                <input type="checkbox" id="chkSys"> 系统提示词
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:400;cursor:pointer">
+                <input type="checkbox" id="chkMes"> 对话示例
+            </label>
+            <label style="display:inline-flex;align-items:center;gap:4px;font-weight:400;cursor:pointer">
+                <input type="checkbox" id="chkWI"> 世界书
+            </label>
+        </div>
+        <button class="btn btn-primary btn-full mt10" id="btnAIAll" onclick="aiModifyAll()">🚀 AI一键修改选中字段</button>
+        <div class="progress-wrap mt6" id="progressWrap">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="status-text mt6" id="statusText"></div>
+    </div>
+</div>
+
+<!-- 底部操作 -->
+<div class="bottom-actions" id="bottomActions" style="display:none">
+    <button class="btn btn-primary" style="flex:1" onclick="uploadToST()">📤 上传为新版本角色卡</button>
+    <button class="btn btn-soft" onclick="downloadJSON()">💾 下载JSON</button>
+</div>
+
+<script>
+let allChars = [];
+let selectedChar = null;
+let selectedCharData = null;
+
+// Request context from parent
+window.parent.postMessage({ type: 'cu-get-context' }, '*');
+
+// Listen for messages from parent
+window.addEventListener('message', (e) => {
+    const msg = e.data;
+    if (!msg || !msg.type) return;
+
+    if (msg.type === 'cu-context') {
+        allChars = msg.characters || [];
+        renderCharList(allChars);
+    }
+    if (msg.type === 'cu-character-data') {
+        if (msg.success) {
+            onCharacterLoaded(msg.data);
+        } else {
+            toast('加载失败: ' + (msg.error || '未知错误'), 'error');
+        }
+    }
+    if (msg.type === 'cu-ai-result') {
+        handleAIResult(msg);
+    }
+    if (msg.type === 'cu-create-result') {
+        if (msg.success) {
+            toast('✅ 角色卡已成功上传到酒馆！', 'success');
+        } else {
+            toast('上传失败: ' + (msg.error || ''), 'error');
+            downloadJSON(); // fallback
+        }
+    }
+});
+
+// Search
+document.getElementById('charSearch').addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    const filtered = q ? allChars.filter(c => (c.name || '').toLowerCase().includes(q)) : allChars;
+    renderCharList(filtered);
+});
+
+function renderCharList(chars) {
+    const list = document.getElementById('charList');
+    document.getElementById('charCount').textContent = `共 ${allChars.length} 个角色卡` + (chars.length !== allChars.length ? `，显示 ${chars.length} 个` : '');
+    if (chars.length === 0) {
+        list.innerHTML = '<div style="padding:16px;text-align:center;color:#aaa;font-size:12px">未找到角色卡</div>';
+        return;
+    }
+    list.innerHTML = chars.map(c => {
+        const ver = getVerFromData(c.data) || '1.0';
+        const sel = selectedChar && selectedChar.avatar === c.avatar ? ' selected' : '';
+        return `<div class="char-item${sel}" data-avatar="${esc(c.avatar)}" onclick="selectChar(this)">
+            <span class="char-item-name">${esc(c.name)}</span>
+            <span class="char-item-ver">v${esc(ver)}</span>
+        </div>`;
+    }).join('');
+}
+
+function selectChar(el) {
+    const avatar = el.dataset.avatar;
+    selectedChar = allChars.find(c => c.avatar === avatar);
+    // Highlight
+    document.querySelectorAll('.char-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    // Request full data from parent
+    window.parent.postMessage({ type: 'cu-get-character', avatar: avatar }, '*');
+    toast('正在加载角色卡...', 'info');
+}
+
+function onCharacterLoaded(charObj) {
+    selectedCharData = charObj;
+    const d = charObj.data || charObj;
+
+    // Fill fields
+    document.getElementById('fName').value = d.name || charObj.name || '';
+    document.getElementById('fVersion').value = 'v' + (getVerFromData(d) || '1.0');
+    document.getElementById('fCreator').value = d.creator || '';
+    document.getElementById('fDesc').value = d.description || charObj.description || '';
+    document.getElementById('fPers').value = d.personality || charObj.personality || '';
+    document.getElementById('fScen').value = d.scenario || charObj.scenario || '';
+    document.getElementById('fFirst').value = d.first_mes || charObj.first_mes || '';
+    document.getElementById('fSys').value = d.system_prompt || '';
+    document.getElementById('fMes').value = d.mes_example || charObj.mes_example || '';
+
+    // World info
+    loadWorldInfo(d);
+
+    // Show all sections
+    ['secInfo','secDesc','secPers','secScen','secFirst','secSys','secMes','secWI','secAIAll'].forEach(id => {
+        document.getElementById(id).style.display = '';
+    });
+    document.getElementById('bottomActions').style.display = '';
+    toast('角色卡已加载 ✓', 'success');
+}
+
+function loadWorldInfo(d) {
+    const container = document.getElementById('wiEntries');
+    container.innerHTML = '';
+    if (d.character_book && d.character_book.entries) {
+        const entries = Array.isArray(d.character_book.entries) ? d.character_book.entries : Object.values(d.character_book.entries);
+        entries.forEach((entry, idx) => {
+            addWIEntryUI(container, entry, idx);
+        });
+    }
+    if (container.innerHTML === '') {
+        container.innerHTML = '<div style="font-size:11px;color:#aaa;text-align:center;padding:8px">暂无世界书条目</div>';
+    }
+}
+
+function addWIEntryUI(container, entry, idx) {
+    // Remove empty placeholder
+    const placeholder = container.querySelector('div[style*="text-align:center"]');
+    if (placeholder) placeholder.remove();
+
+    const keys = Array.isArray(entry.keys) ? entry.keys.join(', ') : (Array.isArray(entry.key) ? entry.key.join(', ') : String(entry.keys || entry.key || ''));
+    const div = document.createElement('div');
+    div.className = 'wi-entry';
+    div.dataset.idx = idx;
+    div.innerHTML = `
+        <div class="wi-entry-hdr">
+            <strong>条目 ${idx + 1}</strong>
+            <button class="btn btn-sm btn-soft" onclick="removeWIEntry(this)" style="padding:2px 8px;font-size:11px">✕ 删除</button>
+        </div>
+        <div class="field-group mb6">
+            <label>名称/备注</label>
+            <input type="text" class="wi-comment" value="${esc(entry.comment || entry.name || '')}">
+        </div>
+        <div class="field-group mb6">
+            <label>关键词 (逗号分隔)</label>
+            <input type="text" class="wi-keys" value="${esc(keys)}">
+        </div>
+        <div class="field-group">
+            <label>内容</label>
+            <textarea class="wi-content" rows="3">${esc(entry.content || '')}</textarea>
+        </div>
+    `;
+    container.appendChild(div);
+}
+
+function addWIEntry() {
+    const container = document.getElementById('wiEntries');
+    const idx = container.querySelectorAll('.wi-entry').length;
+    addWIEntryUI(container, { keys: [], content: '', comment: '' }, idx);
+}
+
+function removeWIEntry(btn) {
+    btn.closest('.wi-entry').remove();
+    // Re-index
+    document.querySelectorAll('#wiEntries .wi-entry').forEach((el, i) => {
+        el.dataset.idx = i;
+        el.querySelector('strong').textContent = '条目 ' + (i + 1);
+    });
+}
+
+// Section toggle
+function toggleSection(hdr) {
+    hdr.classList.toggle('collapsed');
+    const body = hdr.nextElementSibling;
+    body.classList.toggle('hidden');
+}
+
+// Collect world info from UI
+function collectWorldInfo() {
+    const entries = {};
+    document.querySelectorAll('#wiEntries .wi-entry').forEach((el, idx) => {
+        const comment = el.querySelector('.wi-comment').value.trim();
+        const keysStr = el.querySelector('.wi-keys').value.trim();
+        const content = el.querySelector('.wi-content').value.trim();
+        const keys = keysStr ? keysStr.split(/[,，]/).map(k => k.trim()).filter(Boolean) : [];
+        entries[idx] = {
+            uid: idx, keys: keys, secondary_keys: [],
+            content: content, comment: comment || 'Entry ' + (idx + 1),
+            constant: false, selective: true, order: idx * 100,
+            position: 0, enabled: true, insertion_order: idx * 100
+        };
+    });
+    return Object.keys(entries).length > 0 ? { name: 'World Book', entries: entries } : null;
+}
+
+// AI single field modify
+let pendingAI = null;
+
+function aiModifyField(fieldName, textareaId, promptId) {
+    const current = document.getElementById(textareaId).value;
+    const instruction = document.getElementById(promptId).value.trim();
+    if (!instruction) { toast('请输入AI修改指令', 'error'); return; }
+
+    const prompt = `你是角色卡设计专家。请修改以下「${fieldName}」字段内容。
+
+当前内容：
+${current || '(空)'}
+
+修改要求：${instruction}
+
+请直接输出修改后的完整内容，不要加任何解释、标题或代码块标记。只输出纯文本内容。`;
+
+    pendingAI = { type: 'field', textareaId: textareaId };
+    toast('AI正在修改...', 'info');
+    window.parent.postMessage({ type: 'cu-generate-ai', prompt: prompt }, '*');
+}
+
+function aiModifyWorldInfo() {
+    const instruction = document.getElementById('aiWI').value.trim();
+    if (!instruction) { toast('请输入AI修改指令', 'error'); return; }
+
+    // Collect current world info
+    let wiText = '';
+    document.querySelectorAll('#wiEntries .wi-entry').forEach((el, idx) => {
+        const comment = el.querySelector('.wi-comment').value;
+        const keys = el.querySelector('.wi-keys').value;
+        const content = el.querySelector('.wi-content').value;
+        wiText += `\n条目「${comment}」[关键词: ${keys}]:\n${content}\n`;
+    });
+
+    const prompt = `你是角色卡设计专家。请修改以下世界书条目。
+
+当前世界书：${wiText || '(空)'}
+
+修改要求：${instruction}
+
+请用以下JSON数组格式输出，不要有任何额外文字：
+\`\`\`json
+[{"comment":"条目名","keys":["关键词"],"content":"内容"}]\n\`\`\``;
+
+    pendingAI = { type: 'worldinfo' };
+    toast('AI正在修改世界书...', 'info');
+    window.parent.postMessage({ type: 'cu-generate-ai', prompt: prompt }, '*');
+}
+
+function aiModifyAll() {
+    const instruction = document.getElementById('aiAll').value.trim();
+    if (!instruction) { toast('请输入全局修改指令', 'error'); return; }
+
+    // Collect selected fields
+    const fields = {};
+    const fieldMap = {
+        chkDesc: { id: 'fDesc', name: 'description' },
+        chkPers: { id: 'fPers', name: 'personality' },
+        chkScen: { id: 'fScen', name: 'scenario' },
+        chkFirst: { id: 'fFirst', name: 'first_mes' },
+        chkSys: { id: 'fSys', name: 'system_prompt' },
+        chkMes: { id: 'fMes', name: 'mes_example' }
+    };
+    const selectedFields = [];
+    Object.entries(fieldMap).forEach(([chk, info]) => {
+        if (document.getElementById(chk).checked) {
+            fields[info.name] = document.getElementById(info.id).value;
+            selectedFields.push(info.name);
+        }
+    });
+    const includeWI = document.getElementById('chkWI').checked;
+
+    if (selectedFields.length === 0 && !includeWI) { toast('请至少选择一项', 'error'); return; }
+
+    let prompt = `你是角色卡设计专家。请根据用户要求修改角色卡。\n\n`;
+    selectedFields.forEach(f => {
+        prompt += `### ${f}\n${fields[f] || '(空)'}\n\n`;
+    });
+    if (includeWI) {
+        prompt += `### 世界书条目\n`;
+        document.querySelectorAll('#wiEntries .wi-entry').forEach(el => {
+            const c = el.querySelector('.wi-comment').value;
+            const k = el.querySelector('.wi-keys').value;
+            const t = el.querySelector('.wi-content').value;
+            prompt += `条目「${c}」[关键词:${k}]: ${t}\n`;
+        });
+        prompt += '\n';
+    }
+    prompt += `修改要求：${instruction}\n\n`;
+    prompt += `请用JSON输出，格式如下（只包含选中的字段）：\n\`\`\`json\n{\n`;
+    selectedFields.forEach((f, i) => {
+        prompt += `  "${f}": "修改后内容"${(i < selectedFields.length - 1 || includeWI) ? ',' : ''}\n`;
+    });
+    if (includeWI) {
+        prompt += `  "world_info_entries": [{"comment":"名称","keys":["词"],"content":"内容"}]\n`;
+    }
+    prompt += `}\n\`\`\`\n只输出JSON，不要额外文字。`;
+
+    pendingAI = { type: 'all', selectedFields: selectedFields, includeWI: includeWI, fieldMap: fieldMap };
+    document.getElementById('progressWrap').classList.add('visible');
+    document.getElementById('progressBar').style.width = '30%';
+    document.getElementById('statusText').textContent = 'AI正在处理...';
+    document.getElementById('btnAIAll').disabled = true;
+    toast('AI正在全局修改...', 'info');
+    window.parent.postMessage({ type: 'cu-generate-ai', prompt: prompt }, '*');
+}
+
+function handleAIResult(msg) {
+    if (!pendingAI) return;
+    const task = pendingAI;
+    pendingAI = null;
+
+    if (!msg.success) {
+        toast('AI调用失败: ' + (msg.error || ''), 'error');
+        resetProgress();
+        return;
+    }
+
+    const text = msg.text || '';
+
+    if (task.type === 'field') {
+        // Direct text replacement
+        const clean = text.replace(/^```[\s\S]*?\n/, '').replace(/```$/, '').trim();
+        document.getElementById(task.textareaId).value = clean;
+        toast('✅ AI修改完成', 'success');
+    } else if (task.type === 'worldinfo') {
+        try {
+            const arr = parseJSONArray(text);
+            if (arr && arr.length > 0) {
+                const container = document.getElementById('wiEntries');
+                container.innerHTML = '';
+                arr.forEach((entry, idx) => addWIEntryUI(container, entry, idx));
+                toast('✅ 世界书AI修改完成', 'success');
+            } else {
+                toast('AI返回格式无法解析', 'error');
+            }
+        } catch (e) {
+            toast('AI返回解析失败', 'error');
+        }
+    } else if (task.type === 'all') {
+        try {
+            const parsed = parseJSONObject(text);
+            if (parsed) {
+                const fm = task.fieldMap;
+                Object.entries(fm).forEach(([chk, info]) => {
+                    if (parsed[info.name] !== undefined) {
+                        document.getElementById(info.id).value = parsed[info.name];
+                    }
+                });
+                if (task.includeWI && parsed.world_info_entries && Array.isArray(parsed.world_info_entries)) {
+                    const container = document.getElementById('wiEntries');
+                    container.innerHTML = '';
+                    parsed.world_info_entries.forEach((entry, idx) => addWIEntryUI(container, entry, idx));
+                }
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('statusText').textContent = '✅ 全局修改完成！';
+                toast('✅ 全局AI修改完成', 'success');
+            } else {
+                toast('AI返回格式无法解析', 'error');
+            }
+        } catch (e) {
+            toast('AI返回解析失败: ' + e.message, 'error');
+        }
+        resetProgress();
+    }
+}
+
+function resetProgress() {
+    setTimeout(() => {
+        document.getElementById('progressWrap').classList.remove('visible');
+        document.getElementById('progressBar').style.width = '0%';
+        document.getElementById('statusText').textContent = '';
+        document.getElementById('btnAIAll').disabled = false;
+    }, 2000);
+}
+
+// Upload to SillyTavern
+function uploadToST() {
+    if (!selectedCharData) { toast('请先选择角色卡', 'error'); return; }
+    const d = selectedCharData.data || selectedCharData;
+    const origName = (d.name || selectedCharData.name || 'Character');
+    const baseName = origName.replace(/\s*[vV]?\d+\.\d+\s*$/, '').trim();
+    const curVer = parseFloat(getVerFromData(d) || '1');
+    const nextVer = (Math.floor(curVer) + 1) + '.0';
+
+    const charData = {
+        name: baseName + ' v' + nextVer,
+        description: document.getElementById('fDesc').value,
+        personality: document.getElementById('fPers').value,
+        scenario: document.getElementById('fScen').value,
+        first_mes: document.getElementById('fFirst').value,
+        system_prompt: document.getElementById('fSys').value,
+        mes_example: document.getElementById('fMes').value,
+        creator_notes: d.creator_notes || '',
+        creator: d.creator || '',
+        character_version: nextVer,
+        tags: d.tags || [],
+        post_history_instructions: d.post_history_instructions || '',
+        alternate_greetings: d.alternate_greetings || [],
+        extensions: d.extensions || {}
+    };
+
+    const wb = collectWorldInfo();
+    if (wb) charData.character_book = wb;
+
+    window.parent.postMessage({ type: 'cu-create-character', data: charData }, '*');
+    toast('正在上传到酒馆...', 'info');
+}
+
+function downloadJSON() {
+    if (!selectedCharData) { toast('请先选择角色卡', 'error'); return; }
+    const d = selectedCharData.data || selectedCharData;
+    const origName = (d.name || selectedCharData.name || 'Character');
+    const baseName = origName.replace(/\s*[vV]?\d+\.\d+\s*$/, '').trim();
+    const curVer = parseFloat(getVerFromData(d) || '1');
+    const nextVer = (Math.floor(curVer) + 1) + '.0';
+
+    const charData = {
+        name: baseName + ' v' + nextVer,
+        description: document.getElementById('fDesc').value,
+        personality: document.getElementById('fPers').value,
+        scenario: document.getElementById('fScen').value,
+        first_mes: document.getElementById('fFirst').value,
+        system_prompt: document.getElementById('fSys').value,
+        mes_example: document.getElementById('fMes').value,
+        creator_notes: d.creator_notes || '',
+        creator: d.creator || '',
+        character_version: nextVer,
+        tags: d.tags || [],
+        post_history_instructions: d.post_history_instructions || '',
+        alternate_greetings: d.alternate_greetings || [],
+        extensions: d.extensions || {}
+    };
+    const wb = collectWorldInfo();
+    if (wb) charData.character_book = wb;
+
+    const v2 = { spec: 'chara_card_v2', spec_version: '2.0', data: charData };
+    const blob = new Blob([JSON.stringify(v2, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = charData.name + '.json';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast('JSON已下载', 'success');
+}
+
+// Helpers
+function getVerFromData(d) {
+    if (!d) return '1.0';
+    if (d.character_version) {
+        const m = String(d.character_version).match(/(\d+\.?\d*)/);
+        if (m) return m[1];
+    }
+    const name = d.name || '';
+    const m2 = name.match(/[\sv]+(\d+\.\d+)\s*$/i);
+    if (m2) return m2[1];
+    return '1.0';
+}
+
+function parseJSONObject(text) {
+    try {
+        const m = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (m) return JSON.parse(m[1].trim());
+        const s = text.indexOf('{'), e = text.lastIndexOf('}');
+        if (s !== -1 && e > s) return JSON.parse(text.substring(s, e + 1));
+        return null;
+    } catch { return null; }
+}
+
+function parseJSONArray(text) {
+    try {
+        const m = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (m) return JSON.parse(m[1].trim());
+        const s = text.indexOf('['), e = text.lastIndexOf(']');
+        if (s !== -1 && e > s) return JSON.parse(text.substring(s, e + 1));
+        return null;
+    } catch { return null; }
+}
+
+function esc(s) {
+    if (!s) return '';
+    const d = document.createElement('div');
+    d.textContent = String(s);
+    return d.innerHTML;
+}
+
+function toast(msg, type) {
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    const t = document.createElement('div');
+    t.className = 'toast ' + (type || 'info');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 2500);
+}
+</script>
+</body>
+</html>
